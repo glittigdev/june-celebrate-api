@@ -51,7 +51,7 @@ class StandService {
       await Validate.sale.validateAsync(body);
 
       // Validar código
-      if (body.code !== '1234') {
+      if (body.code !== '1517') {
         throw new Error('Código de validação incorreto')
       }
 

@@ -7,7 +7,7 @@ class CardService {
       console.log('Iniciando geração de cards...');
       const cards = [];
 
-      for (let i = 1; i <= 200; i++) {
+      for (let i = 1; i <= 250; i++) {
         console.log('Card::', i);
         const cardNumber = this.padNumber(i, 3); // Gera '001', '002', ..., '200'
         cards.push({
@@ -23,7 +23,7 @@ class CardService {
 
       // Atualiza o campo url_qrCode com base no _id
       const updatePromises = insertedCards.map((card) => {
-        const qrUrl = `http://192.168.3.73:5173/barraca?id=${card._id}`;
+        const qrUrl = `https://d10pefzne7xozt.cloudfront.net/barraca?id=${card._id}`;
         return CardRepository.findCardAndInsertURL(card._id, {
           url_qrCode: qrUrl,
         });
