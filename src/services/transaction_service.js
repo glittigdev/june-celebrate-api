@@ -18,9 +18,11 @@ class TransactionService {
 			const payload = {
 				card: card._id,
 				product: body.product,
+				stand: body.stand,
 				qtd: body.qtd,
 				value_total_operation: body.value,
-				type: body.type
+				type: body.type,
+				product_value: body.product_value
 			}
 
 			const transaction = await TransactionRepository.createTransaction(payload);
@@ -28,7 +30,7 @@ class TransactionService {
 			return transaction;
 		} catch (error) {
 			console.log(error);
-			throw new Error('Erro ao criar novo produto');
+			throw new Error('Erro ao registrar transação');
 		}
   }
 }

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "dev": "node app.js"
+    "dev": "node app.js",
+    "zip": "zip -r ../june-celebrate-api.zip . -x \"node_modules/*\" \".git/*\""
   },
   "keywords": [],
   "author": "",

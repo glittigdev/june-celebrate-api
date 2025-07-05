@@ -1,6 +1,7 @@
 const StandService = require('../services/stand_service');
+const BaseController = require('../base/base_controller');
 
-class StandController {
+class StandController extends BaseController {
   async createStand(req, res) {
     try {
       const body = req.body;
@@ -15,7 +16,6 @@ class StandController {
   async takeCardInformation(req, res) {
     try {
       const { id } = req.query;
-      console.log(id)
       const results = await StandService.takeCardInformationToSeling(id);
       res.status(200).json(results);
     } catch (err) {
@@ -28,8 +28,10 @@ class StandController {
     try {
       const { id } = req.query;
       const  body = req.body;
+
       const results = await StandService.registerSale(id, body);
-      res.status(200).json(results);
+      const response = this.middlewareResponse(results.status, 'selling_success', results.data)
+      res.json(response);
     } catch (err) {
       console.log('error->registerSale: ', err);
       res.status(400).json({ err: 'err_register_sale' });

@@ -8,6 +8,7 @@ const { TypeTransaction } = require('../domains/enum');
 const StandRepository = require('../repositories/stand_repository');
 const CardRepository = require('../repositories/card_repository');
 const CashierRepository = require('../repositories/cashier_repository');
+const ProductRepository = require('../repositories/product_repository');
 
 // Validate
 const Validate = require('../validation/stand_validation');
@@ -44,15 +45,12 @@ class StandService {
   }
 
   async registerSale(cardId, body) {
-    console.log('---------------')
-    console.log(cardId, body)
-    console.log('---------------')
     try {
       await Validate.sale.validateAsync(body);
 
       // Validar código
       if (body.code !== '1517') {
-        throw new Error('Código de validação incorreto')
+        throw new Error('Senha de inválida!')
       }
 
       // verificar existencia do cartão
@@ -62,16 +60,20 @@ class StandService {
       }
 
       // valor disponível no cartão é maior ou igual ao valor de compra
-      if (card.value_available <= body.value) {
+      if (card.value_available < body.value) {
         throw new Error('Saldo insuficiente!');
-      }
+      } 
 
-      // Registrar vendas (de guê?)
+      const product = await ProductRepository.findOne({ _id: body.product})
+
+      // Registrar vendas;
       const payload = {
         product: body.product,
+        stand: body.stand,
         qtd: body.qtd,
         value: body.value,
-        type: TypeTransaction.PRODUCT
+        type: TypeTransaction.PRODUCT,
+        product_value: product.value
       }
 
       const transaction = await TransactionService.createTransaction(cardId, payload)
@@ -86,16 +88,31 @@ class StandService {
 
       const cardUpdated = await CashierRepository.linkCardWithPerson(card._id, updateCard);
 
-      return { message: 'register_value', card: cardUpdated };
+      return {
+        data: {
+          message: `Venda realizada com sucesso! Novo saldo: ${cardUpdated.value_available}`,
+          balance: cardUpdated.value_available,
+        },
+        status: 201
+      };
     } catch (error) {
-      console.log(error);
-      throw new Error('Erro ao buscar informações do cartão');
+      return { 
+        data: { 
+          message: error.message 
+        }, 
+        status: 400 
+      };
     }
   }
 
   async takeStands() {
     try {
       const filter = [
+        {
+          $match: {
+            name: { $ne: 'Caixa'}
+          }
+        },
         {
           $project: {
             name: 1

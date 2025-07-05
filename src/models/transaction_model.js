@@ -17,11 +17,20 @@ let SchemaTransaction = Schema(
       ref: 'Products',
       index: true,
     },
+    stand: {
+      type: Schema.Types.ObjectId,
+      ref: 'Stands',
+      index: true,
+    },
     qtd: {
       type: Schema.Types.Number,
       required: true,
     },
     value_total_operation: {
+      type: Schema.Types.Number,
+      required: true,
+    },
+    product_value: {
       type: Schema.Types.Number,
       required: true,
     },

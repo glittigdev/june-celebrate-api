@@ -6,6 +6,7 @@ const CashierRepository = require('../repositories/cashier_repository');
 const PersonRepository = require('../repositories/person_repository');
 const CardRepository = require('../repositories/card_repository');
 const ProductRepository = require('../repositories/product_repository')
+const LogDeposit = require('../repositories/log_deposit_repository');
 
 // Validation
 const Validate = require('../validation/cashier_validation');
@@ -17,8 +18,6 @@ class CashierService {
   async linkinCardWithUser(body) {
     try {
       await Validate.linkin.validateAsync(body);
-
-      let statusReturn = 200;
 
       // Buscar o card pelo número;
       const card = await CashierRepository.findCashiers({ card: body.card });
@@ -42,7 +41,7 @@ class CashierService {
         person: person._id,
         value_available: body.value,
         status: StatusCard.IN_USE,
-        deposit_type: DepositType.fromString(body.depositType),
+        deposit_type: [DepositType.fromString(body.depositType)],
         operation_type: [OperationType.LINK],
         total_value: body.value,
       };
@@ -51,9 +50,16 @@ class CashierService {
         card._id,
         dataUpdateCard
       );
+
       if (!result) {
         throw new Error('Não foi possível vincular!');
       }
+
+      await LogDeposit.createDeposit({ 
+        value_deposit: body.value,
+        deposit_type: DepositType.fromString(body.depositType),
+        operation_type: OperationType.LINK
+      })
 
       return {
         data: {
@@ -89,17 +95,17 @@ class CashierService {
 
       //TODO: Validar melhor a regra para recarga em diferente formato de depósito e também devolver o valor disponível para uso;
       // Verificar o tipo depósito realizado
-      if (card.deposit_type !== DepositType.fromString(body.depositType)) {
-        return { message: 'link_a_new_card' };
-      }
-
       const operationType = card.operation_type;
+      const depositType = card.deposit_type;
+
 
       operationType.push(OperationType.RECHARGE);
+      depositType.push(DepositType.fromString(body.depositType));
 
       const payload = {
         value_available: card.value_available + body.value,
         operation_type: operationType,
+        deposit_type: depositType,
         total_value: card.total_value + body.value,
       };
 
@@ -108,10 +114,27 @@ class CashierService {
         payload
       );
 
-      return { message: 'recharge_card', balance: result.value_available };
+       await LogDeposit.createDeposit({ 
+        value_deposit: body.value,
+        deposit_type: DepositType.fromString(body.depositType),
+        operation_type: OperationType.RECHARGE
+      })
+
+      return {
+        data: {
+          message: `Depósito realizado com sucesso! Valor disponível ${result.value_available}`,
+          balance: result.value_available,
+        },
+        status: 201
+      };
     } catch (error) {
       console.log(error);
-      throw new Error('Erro ao recarregar cartão');
+      return { 
+        data: { 
+          message: error.message 
+        }, 
+        status: 400 
+      };
     }
   }
 
@@ -183,26 +206,27 @@ class CashierService {
 
       // Verficar status do cartão;
       if (card.status !== StatusCard.IN_USE) {
-        throw new Error('Cartão não está em uso');
+        throw new Error('Cartão não está em uso.');
       }
 
       // Verifica se existe valor disponível para doação
       if (card.value_available <= 0) {
-        return {
-          message: 'not_value_available',
-          balance: card.value_available,
-        };
+        throw new Error('Não há valor disponível para doação.');
       }
 
       // Busca o produto doação;
       const productDonation = await ProductRepository.findOne({ name: 'Doação' })
+
+      const value_removed = card.value_available;
 
       // gerar transação da doação realizada
       const transaction = await TransactionService.createTransaction(card._id, {
         product: String(productDonation._id),
         qtd: 0,
         value: card.value_available,
-        type: TypeTransaction.DONATION
+        type: TypeTransaction.DONATION,
+        stand: String(productDonation.stand),
+        product_value: 0
       });
 
       if (!transaction) {
@@ -222,10 +246,21 @@ class CashierService {
 
       const donation = await CashierRepository.linkCardWithPerson(card._id, updateCard);
 
-      return { message: 'donation_success', balance: donation.value_available };
+      return {
+        data: {
+          message: `Doação realizado com sucesso! Valor doado: ${value_removed}`,
+          balance: donation.value_available,
+        },
+        status: 201
+      };
     } catch (error) {
       console.log(error);
-      throw new Error('Erro ao retirar saldo do cartão');
+      return { 
+        data: { 
+          message: error.message 
+        }, 
+        status: 400 
+      };
     }
   }
 }

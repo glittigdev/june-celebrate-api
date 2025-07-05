@@ -8,6 +8,7 @@ const create = Joi.object({
 const sale = Joi.object({
   code: Joi.string().required(),
   product: Joi.string().required(),
+  stand: Joi.string().required(),
   qtd: Joi.number().required(),
   value: Joi.number().required()
 });

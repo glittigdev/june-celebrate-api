@@ -35,7 +35,7 @@ let SchemaCard = Schema(
       default: 0,
     },
     deposit_type: {
-      type: Schema.Types.String,
+      type: Schema.Types.Mixed,
       enum: [
         DepositType.CASH,
         DepositType.CREDIT,
