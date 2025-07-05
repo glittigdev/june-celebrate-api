@@ -2,7 +2,12 @@ const mongoose = require('mongoose');
 
 async function setupDatabase() {
   try {
-    const url = `mongodb://root:example@localhost:27017/celre?authSource=admin`;
+    const url = `mongodb+srv://littigdev:kxbBPUDXTLIgwBCO@cluster0.d4qimkq.mongodb.net/celre`;
+
+    await mongoose.connect(url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
     await mongoose.connect(url);
 
