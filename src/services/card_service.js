@@ -7,7 +7,7 @@ class CardService {
       console.log('Iniciando geração de cards...');
       const cards = [];
 
-      for (let i = 1; i <= 250; i++) {
+      for (let i = 1; i <= 350; i++) {
         console.log('Card::', i);
         const cardNumber = this.padNumber(i, 3); // Gera '001', '002', ..., '200'
         cards.push({

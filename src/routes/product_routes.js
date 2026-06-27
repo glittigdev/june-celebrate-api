@@ -11,6 +11,10 @@ const Router = function (router, db) {
     .route('/product/info')
     .get(controller.productInfo.bind(controller));
 
+  router
+    .route('/barraca/:id/produtos')
+    .get(controller.productsByStand.bind(controller));
+
 };
 
 module.exports = Router;

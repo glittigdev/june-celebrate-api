@@ -36,18 +36,18 @@ class ProductService {
       const filter = [
         {
           $match: {
-            stand: new mongoose.Types.ObjectId(id)
-          }
+            stand: new mongoose.Types.ObjectId(id),
+            active: { $ne: false },
+          },
         },
         {
           $project: {
             name: 1,
-            value: 1
-          }
-        }
-      ]
+            value: 1,
+          },
+        },
+      ];
 
-      // Busca informações do cartão para realizar a venda
       const products = await ProductRepository.aggregate(filter);
 
       return { message: 'take_product_information', products };

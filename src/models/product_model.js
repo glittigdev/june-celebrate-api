@@ -21,6 +21,10 @@ let SchemaProducts = Schema(
     qtd_available: {
       type: Schema.Types.Number,
     },
+    active: {
+      type: Schema.Types.Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
