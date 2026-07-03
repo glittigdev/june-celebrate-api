@@ -18,6 +18,35 @@ class CardRepository {
     return await Model.findById(id);
   }
 
+  async findCardWithTransactions(id) {
+    const TransactionModel = require('../models/transaction_model');
+
+    const card = await Model.findById(id);
+    if (!card) return null;
+
+    const transactions = await TransactionModel.aggregate([
+      { $match: { card: new mongoose.Types.ObjectId(id) } },
+      { $lookup: { from: 'products', localField: 'product', foreignField: '_id', as: 'product' } },
+      { $lookup: { from: 'stands', localField: 'stand', foreignField: '_id', as: 'stand' } },
+      {
+        $addFields: {
+          product: { $arrayElemAt: ['$product', 0] },
+          stand: { $arrayElemAt: ['$stand', 0] },
+        },
+      },
+      {
+        $project: {
+          createdAt: 1, type: 1, qtd: 1, product_value: 1, value_total_operation: 1,
+          'product._id': 1, 'product.name': 1,
+          'stand._id': 1, 'stand.name': 1,
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]);
+
+    return { card, transactions };
+  }
+
   async findCardInformation(id) {
     const filter = [
       {

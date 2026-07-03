@@ -23,7 +23,7 @@ class CardService {
 
       // Atualiza o campo url_qrCode com base no _id
       const updatePromises = insertedCards.map((card) => {
-        const qrUrl = `https://d10pefzne7xozt.cloudfront.net/barraca?id=${card._id}`;
+        const qrUrl = `http://192.168.0.30:5173/card?id=${card._id}`;
         return CardRepository.findCardAndInsertURL(card._id, {
           url_qrCode: qrUrl,
         });
@@ -37,6 +37,12 @@ class CardService {
       console.log(error);
       throw new Error('Erro ao gerar Cards');
     }
+  }
+
+  async getCardInfo(id) {
+    const result = await CardRepository.findCardWithTransactions(id);
+    if (!result) throw new Error('card_not_found');
+    return result;
   }
 
   padNumber(num, size) {

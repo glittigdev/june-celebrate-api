@@ -6,6 +6,10 @@ const Router = function (router, db) {
   router
     .route('/card/generate-cards')
     .get(controller.generateCards.bind(controller));
+
+  router
+    .route('/card/info/:id')
+    .get(controller.getCardInfo.bind(controller));
 };
 
 module.exports = Router;
