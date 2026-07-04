@@ -1,9 +1,7 @@
 const Joi = require('joi');
 
 const registrar = Joi.object({
-  senha: Joi.string().required().messages({
-    'any.required': 'Senha de liberação é obrigatória.',
-  }),
+  senha: Joi.string().optional().allow(''),
   produtoId: Joi.string().required().messages({
     'any.required': 'Produto é obrigatório.',
   }),

@@ -8,19 +8,12 @@ const TransactionService = require('../services/transaction_service');
 const Validate = require('../validation/consumo_validation');
 const { TypeTransaction } = require('../domains/enum');
 
-const SENHA_LIBERACAO = '1517';
-
 class ConsumoService {
   async registrarConsumo(body) {
     try {
       await Validate.registrar.validateAsync(body);
 
-      // 1. Validar senha de liberação
-      if (body.senha !== SENHA_LIBERACAO) {
-        throw new Error('Senha de liberação inválida.');
-      }
-
-      // 2. Verificar existência da barraca
+      // 1. Verificar existência da barraca
       const stand = await StandRepository.findStand({ _id: body.barracaId });
       if (!stand) {
         throw new Error('Barraca não encontrada.');
