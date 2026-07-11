@@ -50,6 +50,7 @@ let SchemaCard = Schema(
         OperationType.LINK,
         OperationType.RECHARGE,
         OperationType.WITHDRAWAL,
+        OperationType.TRANSFER,
       ],
     },
     url_qrCode: {

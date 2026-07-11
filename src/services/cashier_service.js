@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 // Services
 const TransactionService = require('../services/transaction_service');
 
@@ -255,12 +257,86 @@ class CashierService {
       };
     } catch (error) {
       console.log(error);
-      return { 
-        data: { 
-          message: error.message 
-        }, 
-        status: 400 
+      return {
+        data: {
+          message: error.message
+        },
+        status: 400
       };
+    }
+  }
+
+  async transferCard(body) {
+    const session = await mongoose.startSession();
+    try {
+      await Validate.transfer.validateAsync(body);
+
+      if (body.originCard === body.destinationCard) {
+        throw new Error('O cartão de origem e o cartão de destino devem ser diferentes.');
+      }
+
+      let originResult, destinationResult, transferValue;
+
+      await session.withTransaction(async () => {
+        const originCard = await CardRepository.findOne(body.originCard, session);
+        if (!originCard) {
+          throw new Error('Cartão de origem não encontrado');
+        }
+
+        const destinationCard = await CardRepository.findOne(body.destinationCard, session);
+        if (!destinationCard) {
+          throw new Error('Cartão de destino não encontrado');
+        }
+
+        if (originCard.status !== StatusCard.IN_USE) {
+          throw new Error('Apenas cartões em uso podem realizar transferência.');
+        }
+
+        if (destinationCard.status !== StatusCard.IN_USE) {
+          throw new Error('O cartão de destino precisa estar em uso.');
+        }
+
+        if (originCard.value_available <= 0) {
+          throw new Error('Não há saldo disponível para transferência.');
+        }
+
+        transferValue = originCard.value_available;
+
+        const originOperationType = originCard.operation_type || [];
+        const destinationOperationType = destinationCard.operation_type || [];
+        originOperationType.push(OperationType.TRANSFER);
+        destinationOperationType.push(OperationType.TRANSFER);
+
+        originResult = await CashierRepository.linkCardWithPerson(originCard._id, {
+          value_available: 0,
+          status: StatusCard.COMPLETED,
+          operation_type: originOperationType,
+        }, session);
+
+        destinationResult = await CashierRepository.linkCardWithPerson(destinationCard._id, {
+          value_available: destinationCard.value_available + transferValue,
+          operation_type: destinationOperationType,
+        }, session);
+      });
+
+      return {
+        data: {
+          message: `Transferência realizada com sucesso! Valor transferido: ${transferValue}`,
+          originCard: { card: body.originCard, balance: originResult.value_available, status: originResult.status },
+          destinationCard: { card: body.destinationCard, balance: destinationResult.value_available },
+        },
+        status: 201
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        data: {
+          message: error.message
+        },
+        status: 400
+      };
+    } finally {
+      await session.endSession();
     }
   }
 }

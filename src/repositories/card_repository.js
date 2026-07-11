@@ -2,8 +2,8 @@ const Model = require('../models/card_model');
 const mongoose = require('mongoose');
 
 class CardRepository {
-  async findOne(card) {
-    return await Model.findOne({ card });
+  async findOne(card, session) {
+    return await Model.findOne({ card }).session(session);
   }
 
   async insertManyCards(data) {

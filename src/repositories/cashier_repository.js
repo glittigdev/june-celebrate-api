@@ -5,8 +5,8 @@ class CashierRepository {
     return await Model.findOne(filter);
   }
 
-  async linkCardWithPerson(id, data) {
-    return await Model.findByIdAndUpdate(id, data, { new: true });
+  async linkCardWithPerson(id, data, session) {
+    return await Model.findByIdAndUpdate(id, data, { new: true, session });
   }
 }
 

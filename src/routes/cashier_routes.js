@@ -18,6 +18,10 @@ const Router = function (router, db) {
   router
     .route('/cashier/donation')
     .post(controller.donationCard.bind(controller));
+
+  router
+    .route('/cashier/transfer')
+    .post(controller.transferCard.bind(controller));
 };
 
 module.exports = Router;
