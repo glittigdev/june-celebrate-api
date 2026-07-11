@@ -29,9 +29,15 @@ const donation = Joi.object({
   card: Joi.string().required(),
 });
 
+const transfer = Joi.object({
+  originCard: Joi.string().required(),
+  destinationCard: Joi.string().required(),
+});
+
 module.exports = {
   linkin,
   recharge,
   withdrawal,
-  donation
+  donation,
+  transfer
 };

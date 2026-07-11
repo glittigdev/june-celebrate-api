@@ -26,6 +26,7 @@ const OperationType = Object.freeze({
   RECHARGE: 'Recarga',
   WITHDRAWAL: 'Retirada',
   DONATION: 'Doação',
+  TRANSFER: 'Transferência',
 
   fromString: function (status) {
     return Object.keys(OperationType).includes(status)

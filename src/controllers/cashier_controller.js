@@ -48,6 +48,17 @@ class CashierController extends BaseController {
       res.status(400).json({ err: 'err_donation_card' });
     }
   }
+
+  async transferCard(req, res) {
+    try {
+      const body = req.body;
+      const results = await CashierService.transferCard(body);
+      res.status(results.status).json(results);
+    } catch (err) {
+      console.log('error->transferCard: ', err);
+      res.status(400).json({ err: 'err_transfer_card' });
+    }
+  }
 }
 
 module.exports = CashierController;
